@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTEC L1/2 DIT Flowchart & DFD Interactive Studio</title>
+    <!-- Tailwind CSS for modern responsive UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for visual icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for standard and accessible fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        dyslexic: ['Atkinson Hyperlegible', 'sans-serif']
+                    },
+                    colors: {
+                        dit: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom styles for diagram components & accessibility */
+        .dyslexia-font {
+            font-family: 'Atkinson Hyperlegible', sans-serif !important;
+            letter-spacing: 0.05em;
+            word-spacing: 0.1em;
+            line-height: 1.6;
+        }
+
+        .high-contrast {
+            background-color: #000000 !important;
+            color: #ffff00 !important;
+        }
+
+        .high-contrast .bg-card,
+        .high-contrast .bg-white,
+        .high-contrast .bg-slate-50,
+        .high-contrast .bg-slate-100 {
+            background-color: #1a1a1a !important;
+            color: #ffffff !important;
+            border-color: #ffff00 !important;
+        }
+
+        .high-contrast button {
+            border: 2px solid #ffff00 !important;
+            color: #ffff00 !important;
+        }
+
+        /* Shape Styles */
+        .shape-node {
+            touch-action: none;
+            user-select: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .shape-node.selected {
+            ring: 3px;
+            outline: 2px solid #0284c7;
+            box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+        }
+
+        /* Flowchart Shapes Visual CSS */
+        .shape-start-end {
+            border-radius: 9999px;
+            border: 2px solid #10b981;
+            background-color: #ecfdf5;
+        }
+
+        .shape-process {
+            border-radius: 6px;
+            border: 2px solid #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .shape-decision {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            border: 2px solid #f59e0b;
+            background-color: #fffbeb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shape-input-output {
+            transform: skew(-15deg);
+            border-radius: 4px;
+            border: 2px solid #8b5cf6;
+            background-color: #f5f3ff;
+        }
+        .shape-input-output > div {
+            transform: skew(15deg); /* Counter-skew text */
+        }
+
+        /* DFD Shapes */
+        .shape-dfd-entity {
+            border-radius: 2px;
+            border: 2px solid #475569;
+            background-color: #f8fafc;
+        }
+
+        .shape-dfd-process {
+            border-radius: 18px;
+            border: 2px solid #0284c7;
+            background-color: #e0effe;
+        }
+
+        .shape-dfd-datastore {
+            border-top: 2px solid #d97706;
+            border-bottom: 2px solid #d97706;
+            background-color: #fffbeb;
+        }
+
+        /* SVG Arrow styles */
+        .connector-line {
+            stroke-width: 3px;
+            fill: none;
+            cursor: pointer;
+            transition: stroke 0.2s;
+        }
+        .connector-line:hover {
+            stroke: #ef4444 !important;
+            stroke-width: 5px;
+        }
+
+        .grid-bg {
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col" id="appBody">
+
+    <!-- TOP HEADER -->
+    <header class="bg-dit-800 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-dit-500 p-2 rounded-lg text-white font-bold text-xl">
+                    <i class="fa-solid fa-diagram-project"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">BTEC L1/2 DIT Interactive Studio</h1>
+                    <p class="text-xs text-dit-100">Flowchart & Data Flow Diagram (DFD) Practice Sandbox</p>
+                </div>
+            </div>
+
+            <!-- Global Controls & Accessibility Scaffolding Switcher -->
+            <div class="flex items-center flex-wrap gap-2 text-sm">
+                <!-- Mode Switch -->
+                <div class="bg-dit-900/60 p-1 rounded-lg flex items-center space-x-1 border border-dit-600">
+                    <button id="modeFlowchartBtn" onclick="switchDiagramType('flowchart')" class="px-3 py-1 rounded-md text-xs font-medium transition-colors bg-dit-500 text-white">
+                        <i class="fa-solid fa-route mr-1"></i> Flowchart Mode
+                    </button>
+                    <button id="modeDfdBtn" onclick="switchDiagramType('dfd')" class="px-3 py-1 rounded-md text-xs font-medium transition-colors text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-network-wired mr-1"></i> DFD Mode
+                    </button>
+                </div>
+
+                <!-- Accessibility Tools Toggle -->
+                <button onclick="toggleAccessibilityMenu()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-lg flex items-center gap-1.5 transition" title="Accessibility Options">
+                    <i class="fa-solid fa-universal-access text-yellow-400"></i>
+                    <span>Accessibility & Needs</span>
+                </button>
+
+                <!-- Help / Teacher Info -->
+                <button onclick="openHelpModal()" class="px-3 py-1.5 bg-dit-600 hover:bg-dit-500 text-white text-xs rounded-lg flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span>How to Play</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Dropdown Accessibility Drawer -->
+        <div id="accessibilityDrawer" class="hidden bg-slate-900 border-t border-slate-700 px-4 py-3 text-xs text-white">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <span class="font-bold text-yellow-400"><i class="fa-solid fa-sliders mr-1"></i> SEN Scaffolding & Support:</span>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="dyslexiaToggle" onchange="toggleDyslexiaFont()" class="rounded text-dit-500">
+                        <span>Dyslexia-Friendly Font</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="contrastToggle" onchange="toggleHighContrast()" class="rounded text-dit-500">
+                        <span>High Contrast Mode</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="guideLabelsToggle" onchange="toggleShapeGuides()" checked class="rounded text-dit-500">
+                        <span>Show Shape Hint Tags</span>
+                    </label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="readTextToSpeech()" class="px-2.5 py-1 bg-yellow-500 text-slate-900 rounded font-bold hover:bg-yellow-400 flex items-center gap-1">
+                        <i class="fa-solid fa-volume-high"></i> Read Scenario Out Loud
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE CONTAINER -->
+    <div class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        <!-- LEFT COLUMN: Scenarios & Shape Palette (3 Cols) -->
+        <aside class="lg:col-span-3 flex flex-col space-y-4">
+            
+            <!-- Scenario Selector Box -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 bg-card">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap text-dit-600"></i> BTEC Exam Scenario
+                    </h2>
+                    <span id="levelBadge" class="px-2 py-0.5 text-[10px] bg-green-100 text-green-700 font-semibold rounded-full">Level 1/2</span>
+                </div>
+                
+                <select id="scenarioSelect" onchange="loadScenario(this.value)" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-700 focus:ring-2 focus:ring-dit-500 outline-none">
+                    <optgroup label="Flowchart Exam Scenarios">
+                        <option value="fc_1">FC1: Smart Gym Locker PIN Entry (Comp 3)</option>
+                        <option value="fc_2">FC2: Cinema Ticket Kiosk Payment (Comp 1)</option>
+                        <option value="fc_3">FC3: Smart Home Heating Controller (Comp 3)</option>
+                    </optgroup>
+                    <optgroup label="DFD Exam Scenarios">
+                        <option value="dfd_1">DFD1: FitLife Gym Booking System (Comp 1)</option>
+                        <option value="dfd_2">DFD2: QuickBites Online Food Delivery (Comp 1)</option>
+                        <option value="dfd_3">DFD3: StreamIt Movie Subscription (Comp 1)</option>
+                    </optgroup>
+                </select>
+
+                <!-- Scenario Details & Scaffolding -->
+                <div class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2">
+                    <p id="scenarioText" class="text-slate-600 italic">
+                        Select a scenario from above to practice!
+                    </p>
+                    
+                    <!-- Key Terms / Hints -->
+                    <div class="pt-2 border-t border-slate-200">
+                        <span class="font-semibold text-slate-700 block mb-1">
+                            <i class="fa-solid fa-lightbulb text-yellow-500 mr-1"></i> Key Elements / Word Bank:
+                        </span>
+                        <div id="wordBank" class="flex flex-wrap gap-1">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scaffolding Action Buttons -->
+                <div class="mt-3 flex gap-2">
+                    <button onclick="provideStarterScaffold()" class="flex-1 py-1.5 px-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition">
+                        <i class="fa-solid fa-puzzle-piece"></i> Load Starter Shapes
+                    </button>
+                    <button onclick="toggleHintModal()" class="py-1.5 px-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition">
+                        <i class="fa-solid fa-eye"></i> View Solution Hint
+                    </button>
+                </div>
+            </div>
+
+            <!-- Shape Palette Container -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex-1 bg-card">
+                <h2 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-shapes text-dit-600"></i> Element Palette
+                </h2>
+                <p class="text-[11px] text-slate-500 mb-3">Click or drag elements to add them onto your canvas workspace.</p>
+
+                <!-- Flowchart Palette -->
+                <div id="flowchartPalette" class="space-y-2.5">
+                    <div onclick="addNode('start')" class="cursor-pointer p-2 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-500 rounded-full text-center text-xs font-semibold text-emerald-800 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play"></i> Start / Stop (Terminator)
+                    </div>
+
+                    <div onclick="addNode('process')" class="cursor-pointer p-2.5 bg-blue-50 hover:bg-blue-100 border-2 border-blue-500 rounded-md text-center text-xs font-semibold text-blue-800 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-gear"></i> Process (Action / Calculation)
+                    </div>
+
+                    <div onclick="addNode('decision')" class="cursor-pointer p-2.5 bg-amber-50 hover:bg-amber-100 border-2 border-amber-500 rounded-md text-center text-xs font-semibold text-amber-800 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-code-branch"></i> Decision (Yes / No Condition)
+                    </div>
+
+                    <div onclick="addNode('input')" class="cursor-pointer p-2.5 bg-purple-50 hover:bg-purple-100 border-2 border-purple-500 rounded-sm -skew-x-12 text-center text-xs font-semibold text-purple-800 transition flex items-center justify-center gap-2">
+                        <span class="skew-x-12 flex items-center gap-2"><i class="fa-solid fa-keyboard"></i> Input / Output (Data)</span>
+                    </div>
+                </div>
+
+                <!-- DFD Palette -->
+                <div id="dfdPalette" class="space-y-2.5 hidden">
+                    <div onclick="addNode('dfd_entity')" class="cursor-pointer p-2.5 bg-slate-50 hover:bg-slate-100 border-2 border-slate-600 rounded-sm text-center text-xs font-semibold text-slate-800 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-gear"></i> External Entity (User/System)
+                    </div>
+
+                    <div onclick="addNode('dfd_process')" class="cursor-pointer p-2.5 bg-sky-50 hover:bg-sky-100 border-2 border-sky-500 rounded-xl text-center text-xs font-semibold text-sky-800 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrows-spin"></i> Process (Number & Label)
+                    </div>
+
+                    <div onclick="addNode('dfd_datastore')" class="cursor-pointer p-2.5 bg-amber-50 hover:bg-amber-100 border-y-2 border-amber-600 text-center text-xs font-semibold text-amber-800 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-database"></i> Data Store (D1, D2...)
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-200">
+                    <p class="text-[11px] text-slate-500 font-medium mb-2">Connecting Shapes:</p>
+                    <button id="connectModeBtn" onclick="toggleConnectMode()" class="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-arrow-right"></i> <span id="connectBtnText">Connect Shapes Mode: OFF</span>
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- CENTER / RIGHT COLUMN: Canvas Workspace (9 Cols) -->
+        <main class="lg:col-span-9 flex flex-col space-y-4">
+
+            <!-- Toolbar Controls -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex flex-wrap items-center justify-between gap-2 bg-card">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Canvas Tools:</span>
+                    <button onclick="clearCanvas()" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-md text-xs font-medium transition flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> Clear All
+                    </button>
+                    <button onclick="autoAlignNodes()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-md text-xs font-medium transition flex items-center gap-1">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Tidy
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="validateDiagram()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-square-check"></i> Check My Work
+                    </button>
+                    <button onclick="exportPNG()" class="px-3 py-1.5 bg-dit-600 hover:bg-dit-500 text-white rounded-md text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-download"></i> Save Image
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Grid Container -->
+            <div id="canvasContainer" class="relative bg-white rounded-xl shadow-inner border border-slate-300 grid-bg overflow-hidden flex-1 min-h-[520px] select-none">
+                
+                <!-- SVG Layer for Connecting Arrows -->
+                <svg id="svgLayer" class="absolute inset-0 w-full h-full pointer-events-none z-10">
+                    <defs>
+                        <!-- Arrowhead Marker -->
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7" />
+                        </marker>
+                        <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+                        </marker>
+                    </defs>
+                    <!-- Connector lines dynamically inserted here -->
+                </svg>
+
+                <!-- HTML Node Overlay Container -->
+                <div id="nodesContainer" class="absolute inset-0 z-20">
+                    <!-- Interactive shape cards inserted here -->
+                </div>
+
+                <!-- Canvas Helper Notice Overlay when empty -->
+                <div id="emptyNotice" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none p-4 text-center">
+                    <i class="fa-solid fa-hand-pointer text-4xl mb-2 animate-bounce"></i>
+                    <p class="font-semibold text-sm">Your diagram canvas is empty.</p>
+                    <p class="text-xs">Click a shape from the left panel or click "Load Starter Shapes" to begin.</p>
+                </div>
+            </div>
+
+            <!-- Validation Checklist & Feedback Panel -->
+            <div id="feedbackPanel" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 bg-card">
+                <h3 class="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check text-dit-600"></i> Diagram Self-Check & Feedback
+                </h3>
+                <div id="checklistItems" class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                    <div class="p-2 bg-slate-50 border border-slate-200 rounded flex items-center gap-2 text-slate-600">
+                        <i class="fa-regular fa-circle text-slate-400"></i> Shapes added to canvas
+                    </div>
+                    <div class="p-2 bg-slate-50 border border-slate-200 rounded flex items-center gap-2 text-slate-600">
+                        <i class="fa-regular fa-circle text-slate-400"></i> Connectors linking processes
+                    </div>
+                    <div class="p-2 bg-slate-50 border border-slate-200 rounded flex items-center gap-2 text-slate-600">
+                        <i class="fa-regular fa-circle text-slate-400"></i> All labels edited & updated
+                    </div>
+                </div>
+                <div id="validationResult" class="mt-3 hidden p-3 rounded-lg text-xs font-medium"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL 1: Solution / Hint Modal -->
+    <div id="hintModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 bg-card">
+            <div class="flex items-center justify-between mb-4 border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-500"></i> BTEC Exam Guidance & Hints
+                </h3>
+                <button onclick="toggleHintModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="hintModalContent" class="text-xs text-slate-600 space-y-3 leading-relaxed">
+                <!-- Dynamic hint content -->
+            </div>
+            <div class="mt-5 text-right">
+                <button onclick="toggleHintModal()" class="px-4 py-2 bg-dit-600 text-white rounded-lg text-xs font-bold hover:bg-dit-500">
+                    Got it, back to work!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: How to Play / Teacher Instructions -->
+    <div id="helpModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 bg-card">
+            <div class="flex items-center justify-between mb-4 border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-dit-600"></i> Student & Teacher Guide
+                </h3>
+                <button onclick="openHelpModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="text-xs text-slate-600 space-y-3 leading-relaxed">
+                <p><strong>1. Move Shapes:</strong> Click and drag any shape around the canvas freely.</p>
+                <p><strong>2. Edit Text Labels:</strong> Double-click on any shape text box to type custom BTEC keywords.</p>
+                <p><strong>3. Connect Arrows:</strong> Click "Connect Shapes Mode" ON, then click the <i>First Shape</i> followed by the <i>Second Shape</i> to draw a dynamic arrow.</p>
+                <p><strong>4. Delete Items:</strong> Click a shape or connector line and press <kbd class="px-1 py-0.5 bg-slate-200 rounded text-[10px]">Delete</kbd> or click its remove button.</p>
+                <p><strong>5. Scaffolding Support:</strong> Use "Load Starter Shapes" if you need a scaffolded framework, or toggle Dyslexia fonts / Text-to-Speech in Accessibility options!</p>
+            </div>
+            <div class="mt-5 text-right">
+                <button onclick="openHelpModal()" class="px-4 py-2 bg-dit-600 text-white rounded-lg text-xs font-bold hover:bg-dit-500">
+                    Close Guide
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Application State
+        const state = {
+            diagramType: 'flowchart', // 'flowchart' or 'dfd'
+            currentScenarioKey: 'fc_1',
+            nodes: [],
+            connections: [],
+            selectedNodeId: null,
+            selectedConnectionId: null,
+            connectMode: false,
+            connectSourceId: null,
+            showShapeGuides: true,
+            isDragging: false,
+            dragNodeId: null,
+            dragOffset: { x: 0, y: 0 }
+        };
+
+        // BTEC Exam Scenarios Database
+        const scenarios = {
+            'fc_1': {
+                type: 'flowchart',
+                title: 'FC1: Smart Gym Locker PIN Entry (BTEC DIT Component 3)',
+                level: 'Level 1/2 Pass/Merit',
+                description: 'A gym member enters a 4-digit PIN into a smart locker keyboard. The system checks if the PIN matches the account database. If TRUE, unlock the door and display "Welcome". If FALSE, increase error attempts. If attempts reach 3, trigger alarm.',
+                keywords: ['Start', 'Input 4-digit PIN', 'Is PIN Valid?', 'Unlock Door', 'Error Count + 1', 'Error Count == 3?', 'Sound Alarm', 'Stop'],
+                starterNodes: [
+                    { type: 'start', label: 'Start', x: 200, y: 40 },
+                    { type: 'input', label: 'Input 4-Digit PIN', x: 200, y: 120 },
+                    { type: 'decision', label: 'Is PIN Valid?', x: 200, y: 210 },
+                    { type: 'process', label: 'Unlock Locker Door', x: 420, y: 210 },
+                    { type: 'start', label: 'End Process', x: 420, y: 320 }
+                ],
+                hints: `
+                    <strong>Key Flowchart Principles for BTEC:</strong><br/>
+                    - Always begin with a oval <strong>Start</strong> shape and end with <strong>Stop</strong>.<br/>
+                    - Use <strong>Parallelograms</strong> for 'Input 4-digit PIN'.<br/>
+                    - Use <strong>Diamonds</strong> for decisions ('Is PIN Valid?'). Diamonds MUST have 2 outward arrows labeled 'Yes' and 'No'.
+                `
+            },
+            'fc_2': {
+                type: 'flowchart',
+                title: 'FC2: Cinema Ticket Kiosk Payment (BTEC DIT Component 1)',
+                level: 'Level 2 Merit/Distinction',
+                description: 'A customer selects movie seats on an interactive screen. The kiosk calculates total cost. The user inserts a debit card. System checks bank authorization. If approved, print paper tickets; else show "Payment Failed".',
+                keywords: ['Start', 'Select Seats', 'Calculate Total Cost', 'Read Card', 'Is Card Approved?', 'Print Tickets', 'Show Error', 'Stop'],
+                starterNodes: [
+                    { type: 'start', label: 'Start Kiosk', x: 220, y: 30 },
+                    { type: 'input', label: 'Select Seats & Quantity', x: 220, y: 110 },
+                    { type: 'process', label: 'Calculate Total Price', x: 220, y: 200 },
+                    { type: 'decision', label: 'Payment Approved?', x: 220, y: 290 }
+                ],
+                hints: `
+                    <strong>Tips:</strong> Make sure inputting seat selection is shown as an Input shape, and calculating price is represented as a Process box.
+                `
+            },
+            'fc_3': {
+                type: 'flowchart',
+                title: 'FC3: Smart Home Heating Controller (BTEC DIT Component 3)',
+                level: 'Level 1/2 Pass',
+                description: 'A temperature sensor reads ambient room temp every minute. If temperature is less than 18°C, switch boiler ON. If temperature is greater than 21°C, switch boiler OFF.',
+                keywords: ['Start', 'Read Temp Sensor', 'Temp < 18°C?', 'Turn Boiler ON', 'Temp > 21°C?', 'Turn Boiler OFF'],
+                starterNodes: [
+                    { type: 'start', label: 'Start Loop', x: 220, y: 40 },
+                    { type: 'input', label: 'Read Room Temperature', x: 220, y: 130 },
+                    { type: 'decision', label: 'Temp < 18°C?', x: 220, y: 230 }
+                ],
+                hints: `
+                    <strong>Control System Hint:</strong> Flowcharts for sensor systems often loop back to the top to continually monitor readings.
+                `
+            },
+            'dfd_1': {
+                type: 'dfd',
+                title: 'DFD1: FitLife Gym Booking System (BTEC DIT Component 1)',
+                level: 'Level 1/2 Level 2 Standard',
+                description: 'Create a Data Flow Diagram (DFD). External Entity "Gym Member" sends "Class Request" data into Process 1.0 "Validate & Book Class". Process 1.0 checks "Class Availability" from Data Store D1 "Class Schedule" and writes "Booking Record" to D2 "Member Bookings".',
+                keywords: ['Gym Member', '1.0 Book Class', 'D1: Class Schedule', 'D2: Member Bookings', 'Class Request Data', 'Booking Confirmation'],
+                starterNodes: [
+                    { type: 'dfd_entity', label: 'Gym Member', x: 80, y: 150 },
+                    { type: 'dfd_process', label: '1.0 Validate & Book Class', x: 300, y: 150 },
+                    { type: 'dfd_datastore', label: 'D1: Class Schedule', x: 520, y: 80 },
+                    { type: 'dfd_datastore', label: 'D2: Member Bookings', x: 520, y: 220 }
+                ],
+                hints: `
+                    <strong>DFD Rules for BTEC Exam:</strong><br/>
+                    - <strong>Entities:</strong> Squares/Rectangles for external humans or systems.<br/>
+                    - <strong>Processes:</strong> Rounded rectangles with a number (1.0, 2.0) and action verb.<br/>
+                    - <strong>Data Stores:</strong> Open rectangles with IDs (D1, D2).<br/>
+                    - Data flows MUST always be labeled with data names (e.g. 'Class Details').
+                `
+            },
+            'dfd_2': {
+                type: 'dfd',
+                title: 'DFD2: QuickBites Online Food Delivery (BTEC DIT Component 1)',
+                level: 'Level 2 Distinction',
+                description: 'Customer places an order. Process 1.0 "Process Order" sends payment details to "Payment Gateway" external entity and saves order in D1 "Active Orders". Process 2.0 "Send to Kitchen" reads D1 and notifies "Restaurant Kitchen".',
+                keywords: ['Customer', '1.0 Process Order', 'Payment Gateway', 'D1: Active Orders', '2.0 Dispatch Order', 'Restaurant Kitchen'],
+                starterNodes: [
+                    { type: 'dfd_entity', label: 'Customer', x: 60, y: 100 },
+                    { type: 'dfd_process', label: '1.0 Process Order', x: 260, y: 100 },
+                    { type: 'dfd_entity', label: 'Payment Gateway', x: 260, y: 260 },
+                    { type: 'dfd_datastore', label: 'D1: Active Orders', x: 500, y: 100 }
+                ],
+                hints: `
+                    Ensure data flows connect entities to processes, and processes to data stores. Data stores cannot connect directly to entities!
+                `
+            },
+            'dfd_3': {
+                type: 'dfd',
+                title: 'DFD3: StreamIt Movie Subscription (BTEC DIT Component 1)',
+                level: 'Level 1/2 Pass',
+                description: 'User enters login credentials. Process 1.0 "Authenticate User" reads D1 "User Database". If valid, process generates "Session Token" back to User.',
+                keywords: ['Subscriber', '1.0 Verify Credentials', 'D1: User Accounts', 'Login Request', 'Session Token'],
+                starterNodes: [
+                    { type: 'dfd_entity', label: 'Subscriber', x: 80, y: 150 },
+                    { type: 'dfd_process', label: '1.0 Verify Credentials', x: 300, y: 150 },
+                    { type: 'dfd_datastore', label: 'D1: User Accounts', x: 520, y: 150 }
+                ],
+                hints: `
+                    Data Flow arrow labels should represent noun objects such as 'User Credentials' or 'Account Status'.
+                `
+            }
+        };
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadScenario('fc_1');
+            setupCanvasEventListeners();
+            setupKeyboardListeners();
+        });
+
+        // Switch diagram mode (Flowchart vs DFD)
+        function switchDiagramType(type) {
+            state.diagramType = type;
+            const fcBtn = document.getElementById('modeFlowchartBtn');
+            const dfdBtn = document.getElementById('modeDfdBtn');
+            const fcPalette = document.getElementById('flowchartPalette');
+            const dfdPalette = document.getElementById('dfdPalette');
+
+            if (type === 'flowchart') {
+                fcBtn.className = "px-3 py-1 rounded-md text-xs font-medium transition-colors bg-dit-500 text-white";
+                dfdBtn.className = "px-3 py-1 rounded-md text-xs font-medium transition-colors text-slate-300 hover:text-white";
+                fcPalette.classList.remove('hidden');
+                dfdPalette.classList.add('hidden');
+            } else {
+                dfdBtn.className = "px-3 py-1 rounded-md text-xs font-medium transition-colors bg-dit-500 text-white";
+                fcBtn.className = "px-3 py-1 rounded-md text-xs font-medium transition-colors text-slate-300 hover:text-white";
+                dfdPalette.classList.remove('hidden');
+                fcPalette.classList.add('hidden');
+            }
+
+            // Auto select matching scenario if current doesn't match
+            const currentScenario = scenarios[state.currentScenarioKey];
+            if (currentScenario.type !== type) {
+                const targetKey = type === 'flowchart' ? 'fc_1' : 'dfd_1';
+                document.getElementById('scenarioSelect').value = targetKey;
+                loadScenario(targetKey);
+            }
+        }
+
+        // Load Scenario Data
+        function loadScenario(scenarioKey) {
+            state.currentScenarioKey = scenarioKey;
+            const sc = scenarios[scenarioKey];
+            if (!sc) return;
+
+            // Ensure mode sync
+            if (sc.type !== state.diagramType) {
+                switchDiagramType(sc.type);
+            }
+
+            document.getElementById('scenarioText').innerText = sc.description;
+            document.getElementById('levelBadge').innerText = sc.level;
+
+            // Render Word Bank
+            const wordBankEl = document.getElementById('wordBank');
+            wordBankEl.innerHTML = '';
+            sc.keywords.forEach(kw => {
+                const badge = document.createElement('span');
+                badge.className = "px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-[10px] font-medium cursor-pointer hover:bg-dit-100 transition";
+                badge.innerText = kw;
+                badge.title = "Click to quickly add shape with this label";
+                badge.onclick = () => addQuickNodeFromKeyword(kw);
+                wordBankEl.appendChild(badge);
+            });
+
+            // Update hint modal content
+            document.getElementById('hintModalContent').innerHTML = sc.hints;
+
+            // Clear current canvas
+            clearCanvas();
+        }
+
+        // Quick Node Creation from Keyword Click
+        function addQuickNodeFromKeyword(keyword) {
+            let shapeType = 'process';
+            if (state.diagramType === 'flowchart') {
+                const lower = keyword.toLowerCase();
+                if (lower.includes('start') || lower.includes('stop') || lower.includes('end')) shapeType = 'start';
+                else if (lower.includes('?') || lower.includes('is') || lower.includes('if')) shapeType = 'decision';
+                else if (lower.includes('input') || lower.includes('read') || lower.includes('print')) shapeType = 'input';
+            } else {
+                const lower = keyword.toLowerCase();
+                if (lower.startsWith('d1') || lower.startsWith('d2') || lower.includes('store') || lower.includes('database')) shapeType = 'dfd_datastore';
+                else if (lower.match(/^\d+\.\d+/)) shapeType = 'dfd_process';
+                else shapeType = 'dfd_entity';
+            }
+
+            addNode(shapeType, keyword);
+        }
+
+        // Provide Starter Scaffold Shapes
+        function provideStarterScaffold() {
+            const sc = scenarios[state.currentScenarioKey];
+            if (!sc || !sc.starterNodes) return;
+
+            clearCanvas();
+            sc.starterNodes.forEach(node => {
+                addNode(node.type, node.label, node.x, node.y);
+            });
+            updateFeedback();
+        }
+
+        // Add Node to Canvas
+        function addNode(type, label = null, customX = null, customY = null) {
+            const container = document.getElementById('canvasContainer');
+            const defaultLabels = {
+                'start': 'Start / End',
+                'process': 'Process Step',
+                'decision': 'Is Condition True?',
+                'input': 'Input / Output Data',
+                'dfd_entity': 'External Entity',
+                'dfd_process': '1.0 Process Name',
+                'dfd_datastore': 'D1: Data Store'
+            };
+
+            const nodeX = customX !== null ? customX : Math.floor(Math.random() * 180) + 80;
+            const nodeY = customY !== null ? customY : Math.floor(Math.random() * 180) + 60;
+
+            const newNode = {
+                id: 'node_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                type: type,
+                label: label || defaultLabels[type] || 'Element',
+                x: nodeX,
+                y: nodeY,
+                width: type === 'decision' ? 120 : 140,
+                height: type === 'decision' ? 90 : 60
+            };
+
+            state.nodes.push(newNode);
+            renderNodes();
+            updateEmptyNotice();
+            updateFeedback();
+        }
+
+        // Render Shapes onto Canvas DOM
+        function renderNodes() {
+            const container = document.getElementById('nodesContainer');
+            container.innerHTML = '';
+
+            state.nodes.forEach(node => {
+                const nodeEl = document.createElement('div');
+                nodeEl.id = node.id;
+                nodeEl.style.left = node.x + 'px';
+                nodeEl.style.top = node.y + 'px';
+                nodeEl.style.width = node.width + 'px';
+                nodeEl.style.height = node.height + 'px';
+                nodeEl.className = `absolute shape-node cursor-grab active:cursor-grabbing p-2 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md ${getNodeStyleClass(node.type)} ${state.selectedNodeId === node.id ? 'selected' : ''}`;
+
+                // Label Tag Hint for Scaffolding
+                let guideTag = '';
+                if (state.showShapeGuides) {
+                    guideTag = `<span class="text-[9px] font-bold uppercase opacity-60 pointer-events-none block mb-0.5">${getShapeTagText(node.type)}</span>`;
+                }
+
+                nodeEl.innerHTML = `
+                    ${guideTag}
+                    <div class="text-xs font-semibold px-1 w-full outline-none leading-tight break-words select-text" 
+                         contenteditable="true" 
+                         onblur="updateNodeText('${node.id}', this.innerText)"
+                         onclick="event.stopPropagation()">
+                         ${node.label}
+                    </div>
+                    <button onclick="deleteNode('${node.id}', event)" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow" title="Delete shape">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+
+                // Add hover class trigger for delete button
+                nodeEl.classList.add('group');
+
+                // Attach Mouse Events for Dragging & Connecting
+                nodeEl.addEventListener('mousedown', (e) => onNodeMouseDown(e, node.id));
+                nodeEl.addEventListener('touchstart', (e) => onNodeTouchStart(e, node.id), { passive: false });
+
+                container.appendChild(nodeEl);
+            });
+
+            renderConnections();
+        }
+
+        function getShapeTagText(type) {
+            switch(type) {
+                case 'start': return 'Terminator';
+                case 'process': return 'Process';
+                case 'decision': return 'Decision';
+                case 'input': return 'Input/Output';
+                case 'dfd_entity': return 'Entity';
+                case 'dfd_process': return 'DFD Process';
+                case 'dfd_datastore': return 'Data Store';
+                default: return '';
+            }
+        }
+
+        function getNodeStyleClass(type) {
+            switch(type) {
+                case 'start': return 'shape-start-end text-emerald-900';
+                case 'process': return 'shape-process text-blue-900';
+                case 'decision': return 'shape-decision text-amber-900';
+                case 'input': return 'shape-input-output text-purple-900';
+                case 'dfd_entity': return 'shape-dfd-entity text-slate-800';
+                case 'dfd_process': return 'shape-dfd-process text-sky-950';
+                case 'dfd_datastore': return 'shape-dfd-datastore text-amber-950';
+                default: return 'bg-white border-2 border-slate-400';
+            }
+        }
+
+        // Update Node Text on Edit
+        function updateNodeText(nodeId, newText) {
+            const node = state.nodes.find(n => n.id === nodeId);
+            if (node) {
+                node.label = newText.trim() || 'Unlabeled';
+            }
+            updateFeedback();
+        }
+
+        // Delete Node
+        function deleteNode(nodeId, event) {
+            if (event) event.stopPropagation();
+            state.nodes = state.nodes.filter(n => n.id !== nodeId);
+            state.connections = state.connections.filter(c => c.fromId !== nodeId && c.toId !== nodeId);
+            if (state.selectedNodeId === nodeId) state.selectedNodeId = null;
+            renderNodes();
+            updateEmptyNotice();
+            updateFeedback();
+        }
+
+        // Connector Arrow Logic
+        function toggleConnectMode() {
+            state.connectMode = !state.connectMode;
+            state.connectSourceId = null;
+            const btnText = document.getElementById('connectBtnText');
+            const btn = document.getElementById('connectModeBtn');
+
+            if (state.connectMode) {
+                btnText.innerText = "Connect Shapes Mode: ON (Click Source -> Target)";
+                btn.className = "w-full py-2 px-3 bg-dit-600 hover:bg-dit-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition animate-pulse";
+            } else {
+                btnText.innerText = "Connect Shapes Mode: OFF";
+                btn.className = "w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition";
+            }
+        }
+
+        function handleNodeClickForConnection(nodeId) {
+            if (!state.connectMode) return false;
+
+            if (!state.connectSourceId) {
+                state.connectSourceId = nodeId;
+                state.selectedNodeId = nodeId;
+                renderNodes();
+                return true;
+            } else {
+                if (state.connectSourceId !== nodeId) {
+                    // Create connection
+                    addConnection(state.connectSourceId, nodeId);
+                }
+                state.connectSourceId = null;
+                state.selectedNodeId = null;
+                renderNodes();
+                return true;
+            }
+        }
+
+        function addConnection(fromId, toId) {
+            // Check if connection already exists
+            const exists = state.connections.some(c => c.fromId === fromId && c.toId === toId);
+            if (exists) return;
+
+            const fromNode = state.nodes.find(n => n.id === fromId);
+            let defaultLabel = '';
+            if (fromNode && fromNode.type === 'decision') {
+                // Auto label decision outputs with Yes / No
+                const existingOutputs = state.connections.filter(c => c.fromId === fromId);
+                defaultLabel = existingOutputs.length === 0 ? 'Yes' : 'No';
+            } else if (state.diagramType === 'dfd') {
+                defaultLabel = 'Data Flow';
+            }
+
+            state.connections.push({
+                id: 'conn_' + Date.now(),
+                fromId: fromId,
+                toId: toId,
+                label: defaultLabel
+            });
+
+            renderConnections();
+            updateFeedback();
+        }
+
+        // Render SVG Arrows
+        function renderConnections() {
+            const svgLayer = document.getElementById('svgLayer');
+            // Keep marker defs
+            const defs = svgLayer.querySelector('defs').outerHTML;
+            svgLayer.innerHTML = defs;
+
+            state.connections.forEach(conn => {
+                const fromNode = state.nodes.find(n => n.id === conn.fromId);
+                const toNode = state.nodes.find(n => n.id === conn.toId);
+                if (!fromNode || !toNode) return;
+
+                // Calculate center points
+                const fromCenter = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height / 2 };
+                const toCenter = { x: toNode.x + toNode.width / 2, y: toNode.y + toNode.height / 2 };
+
+                // Calculate edge boundary intersection for sharp arrow points
+                const sourcePoint = getIntersectionPoint(fromCenter, toCenter, fromNode);
+                const targetPoint = getIntersectionPoint(toCenter, fromCenter, toNode);
+
+                // Draw Path
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const midX = (sourcePoint.x + targetPoint.x) / 2;
+                const midY = (sourcePoint.y + targetPoint.y) / 2;
+
+                // Simple curved / quadratic bezier path
+                const d = `M ${sourcePoint.x} ${sourcePoint.y} Q ${midX} ${midY} ${targetPoint.x} ${targetPoint.y}`;
+                
+                path.setAttribute('d', d);
+                path.setAttribute('class', 'connector-line');
+                path.setAttribute('stroke', state.selectedConnectionId === conn.id ? '#ef4444' : '#0284c7');
+                path.setAttribute('marker-end', state.selectedConnectionId === conn.id ? 'url(#arrowhead-selected)' : 'url(#arrowhead)');
+                path.onclick = (e) => {
+                    e.stopPropagation();
+                    selectConnection(conn.id);
+                };
+
+                svgLayer.appendChild(path);
+
+                // Draw Arrow Text Label if present
+                if (conn.label) {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', midX);
+                    text.setAttribute('y', midY - 6);
+                    text.setAttribute('fill', '#0369a1');
+                    text.setAttribute('font-size', '11');
+                    text.setAttribute('font-weight', 'bold');
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('class', 'cursor-pointer hover:underline');
+                    text.textContent = conn.label;
+                    text.onclick = (e) => {
+                        e.stopPropagation();
+                        const newLabel = prompt("Edit Arrow Label:", conn.label);
+                        if (newLabel !== null) {
+                            conn.label = newLabel.trim();
+                            renderConnections();
+                            updateFeedback();
+                        }
+                    };
+                    svgLayer.appendChild(text);
+                }
+            });
+        }
+
+        function selectConnection(connId) {
+            state.selectedConnectionId = connId;
+            state.selectedNodeId = null;
+            renderNodes();
+        }
+
+        // Geometric helper for box edge intersections
+        function getIntersectionPoint(point, target, box) {
+            const dx = target.x - point.x;
+            const dy = target.y - point.y;
+            const halfW = box.width / 2;
+            const halfH = box.height / 2;
+
+            if (Math.abs(dx) * halfH > Math.abs(dy) * halfW) {
+                // Intersects Left or Right
+                const x = dx > 0 ? point.x + halfW : point.x - halfW;
+                const y = point.y + (dy * (x - point.x)) / (dx || 1);
+                return { x, y };
+            } else {
+                // Intersects Top or Bottom
+                const y = dy > 0 ? point.y + halfH : point.y - halfH;
+                const x = point.x + (dx * (y - point.y)) / (dy || 1);
+                return { x, y };
+            }
+        }
+
+        function setupCanvasEventListeners() {
+            const container = document.getElementById('canvasContainer');
+
+            container.addEventListener('mousemove', onMouseMove);
+            container.addEventListener('mouseup', onMouseUp);
+            container.addEventListener('touchmove', onTouchMove, { passive: false });
+            container.addEventListener('touchend', onTouchEnd);
+
+            container.addEventListener('click', (e) => {
+                if (e.target === container || e.target.id === 'svgLayer') {
+                    state.selectedNodeId = null;
+                    state.selectedConnectionId = null;
+                    renderNodes();
+                }
+            });
+        }
+
+        function onNodeMouseDown(e, nodeId) {
+            if (handleNodeClickForConnection(nodeId)) return;
+
+            state.isDragging = true;
+            state.dragNodeId = nodeId;
+            state.selectedNodeId = nodeId;
+            state.selectedConnectionId = null;
+
+            const node = state.nodes.find(n => n.id === nodeId);
+            const container = document.getElementById('canvasContainer').getBoundingClientRect();
+
+            state.dragOffset = {
+                x: e.clientX - container.left - node.x,
+                y: e.clientY - container.top - node.y
+            };
+
+            renderNodes();
+        }
+
+        function onNodeTouchStart(e, nodeId) {
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                onNodeMouseDown({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    preventDefault: () => {}
+                }, nodeId);
+            }
+        }
+
+        function onMouseMove(e) {
+            if (!state.isDragging || !state.dragNodeId) return;
+
+            const container = document.getElementById('canvasContainer').getBoundingClientRect();
+            const node = state.nodes.find(n => n.id === state.dragNodeId);
+
+            if (node) {
+                let newX = e.clientX - container.left - state.dragOffset.x;
+                let newY = e.clientY - container.top - state.dragOffset.y;
+
+                // Keep inside canvas bounds
+                newX = Math.max(10, Math.min(container.width - node.width - 10, newX));
+                newY = Math.max(10, Math.min(container.height - node.height - 10, newY));
+
+                node.x = newX;
+                node.y = newY;
+
+                const el = document.getElementById(node.id);
+                if (el) {
+                    el.style.left = newX + 'px';
+                    el.style.top = newY + 'px';
+                }
+
+                renderConnections();
+            }
+        }
+
+        function onTouchMove(e) {
+            if (state.isDragging && e.touches.length === 1) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                onMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+            }
+        }
+
+        function onMouseUp() {
+            state.isDragging = false;
+            state.dragNodeId = null;
+        }
+
+        function onTouchEnd() {
+            onMouseUp();
+        }
+
+        function setupKeyboardListeners() {
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    // Avoid deleting while editing text inside contenteditable
+                    if (document.activeElement && document.activeElement.isContentEditable) return;
+
+                    if (state.selectedNodeId) {
+                        deleteNode(state.selectedNodeId);
+                    } else if (state.selectedConnectionId) {
+                        state.connections = state.connections.filter(c => c.id !== state.selectedConnectionId);
+                        state.selectedConnectionId = null;
+                        renderConnections();
+                        updateFeedback();
+                    }
+                }
+            });
+        }
+
+        function updateFeedback() {
+            const checklistContainer = document.getElementById('checklistItems');
+            const hasNodes = state.nodes.length > 0;
+            const hasConnections = state.connections.length > 0;
+            const allEdited = state.nodes.length > 0 && state.nodes.every(n => !n.label.includes('Unlabeled') && !n.label.includes('Element'));
+
+            checklistContainer.innerHTML = `
+                <div class="p-2 border rounded flex items-center gap-2 ${hasNodes ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-600'}">
+                    <i class="${hasNodes ? 'fa-solid fa-circle-check text-emerald-600' : 'fa-regular fa-circle text-slate-400'}"></i>
+                    ${hasNodes ? state.nodes.length + ' shapes on canvas' : 'Add shapes to canvas'}
+                </div>
+                <div class="p-2 border rounded flex items-center gap-2 ${hasConnections ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-600'}">
+                    <i class="${hasConnections ? 'fa-solid fa-circle-check text-emerald-600' : 'fa-regular fa-circle text-slate-400'}"></i>
+                    ${hasConnections ? state.connections.length + ' connector arrows drawn' : 'Connect shapes with arrows'}
+                </div>
+                <div class="p-2 border rounded flex items-center gap-2 ${allEdited ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-600'}">
+                    <i class="${allEdited ? 'fa-solid fa-circle-check text-emerald-600' : 'fa-regular fa-circle text-slate-400'}"></i>
+                    ${allEdited ? 'All labels updated' : 'Edit placeholder text'}
+                </div>
+            `;
+        }
+
+        function validateDiagram() {
+            const resultBox = document.getElementById('validationResult');
+            resultBox.classList.remove('hidden');
+
+            const hasNodes = state.nodes.length >= 3;
+            const hasConnections = state.connections.length >= 2;
+
+            if (state.diagramType === 'flowchart') {
+                const hasStart = state.nodes.some(n => n.type === 'start');
+                const hasDecision = state.nodes.some(n => n.type === 'decision');
+
+                if (hasStart && hasDecision && hasConnections) {
+                    resultBox.className = "mt-3 p-3 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2";
+                    resultBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> Excellent BTEC Flowchart structure! You have included Start/Stop terminators, Decision logic, and linked connections.`;
+                } else {
+                    resultBox.className = "mt-3 p-3 bg-amber-100 border border-amber-300 text-amber-800 rounded-lg text-xs font-semibold flex items-center gap-2";
+                    resultBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-amber-600 text-base"></i> Almost there! Ensure your Flowchart includes a Start shape, at least 1 Decision diamond, and linking arrows.`;
+                }
+            } else { // DFD
+                const hasEntity = state.nodes.some(n => n.type === 'dfd_entity');
+                const hasProcess = state.nodes.some(n => n.type === 'dfd_process');
+                const hasStore = state.nodes.some(n => n.type === 'dfd_datastore');
+
+                if (hasEntity && hasProcess && hasStore && hasConnections) {
+                    resultBox.className = "mt-3 p-3 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2";
+                    resultBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> Top Marks! Your DFD correctly combines External Entities, Numbered Processes, Data Stores, and Data Flows.`;
+                } else {
+                    resultBox.className = "mt-3 p-3 bg-amber-100 border border-amber-300 text-amber-800 rounded-lg text-xs font-semibold flex items-center gap-2";
+                    resultBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-amber-600 text-base"></i> Check your DFD requirements: Did you include an Entity, a Process (1.0), a Data Store (D1), and arrows?`;
+                }
+            }
+        }
+
+        function autoAlignNodes() {
+            let startY = 50;
+            state.nodes.forEach((node, index) => {
+                node.x = 240;
+                node.y = startY + (index * 90);
+            });
+            renderNodes();
+        }
+
+        function clearCanvas() {
+            state.nodes = [];
+            state.connections = [];
+            state.selectedNodeId = null;
+            state.selectedConnectionId = null;
+            renderNodes();
+            updateEmptyNotice();
+            updateFeedback();
+            document.getElementById('validationResult').classList.add('hidden');
+        }
+
+        function updateEmptyNotice() {
+            const notice = document.getElementById('emptyNotice');
+            if (state.nodes.length === 0) {
+                notice.classList.remove('hidden');
+            } else {
+                notice.classList.add('hidden');
+            }
+        }
+
+        // Export diagram canvas state
+        function exportPNG() {
+            alert("Diagram layout recorded! In an exam environment, your teacher can view your active canvas and checklist assessment.");
+        }
+
+        function toggleAccessibilityMenu() {
+            const drawer = document.getElementById('accessibilityDrawer');
+            drawer.classList.toggle('hidden');
+        }
+
+        function toggleDyslexiaFont() {
+            const isChecked = document.getElementById('dyslexiaToggle').checked;
+            if (isChecked) {
+                document.body.classList.add('dyslexia-font');
+            } else {
+                document.body.classList.remove('dyslexia-font');
+            }
+        }
+
+        function toggleHighContrast() {
+            const isChecked = document.getElementById('contrastToggle').checked;
+            if (isChecked) {
+                document.body.classList.add('high-contrast');
+            } else {
+                document.body.classList.remove('high-contrast');
+            }
+        }
+
+        function toggleShapeGuides() {
+            state.showShapeGuides = document.getElementById('guideLabelsToggle').checked;
+            renderNodes();
+        }
+
+        function readTextToSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const scenario = scenarios[state.currentScenarioKey];
+                const textToRead = `${scenario.title}. ${scenario.description}`;
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.rate = 0.9; // slightly slower for clarity
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Text to speech is not supported in this browser.");
+            }
+        }
+
+        function toggleHintModal() {
+            const modal = document.getElementById('hintModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function openHelpModal() {
+            const modal = document.getElementById('helpModal');
+            modal.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
